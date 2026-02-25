@@ -9,7 +9,8 @@ project(yoga C CXX)
 
 file(GLOB YOGA_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/../yoga/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../yoga/**/*.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../yoga/**/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../yoga/algorithm/grid/*.cpp)
 
 set(BRIDGE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/wasm_bridge.c)
