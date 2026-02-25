@@ -496,6 +496,8 @@ static void jni_YGNodeCopyStyleJNI(
 YG_NODE_JNI_STYLE_PROP(jint, YGDirection, Direction);
 YG_NODE_JNI_STYLE_PROP(jint, YGFlexDirection, FlexDirection);
 YG_NODE_JNI_STYLE_PROP(jint, YGJustify, JustifyContent);
+YG_NODE_JNI_STYLE_PROP(jint, YGJustify, JustifyItems);
+YG_NODE_JNI_STYLE_PROP(jint, YGJustify, JustifySelf);
 YG_NODE_JNI_STYLE_PROP(jint, YGAlign, AlignItems);
 YG_NODE_JNI_STYLE_PROP(jint, YGAlign, AlignSelf);
 YG_NODE_JNI_STYLE_PROP(jint, YGAlign, AlignContent);
@@ -841,6 +843,220 @@ static void jni_YGNodeStyleSetGapPercentJNI(
 // Yoga specific properties, not compatible with flexbox specification
 YG_NODE_JNI_STYLE_PROP(jfloat, float, AspectRatio);
 
+using GridTrackCountFn = void (*)(YGNodeRef, size_t);
+using GridTrackFn = void (*)(YGNodeRef, size_t, YGGridTrackType, float);
+using GridTrackMinMaxFn =
+    void (*)(YGNodeRef, size_t, YGGridTrackType, float, YGGridTrackType, float);
+
+// Applies a track list, passed from Java as parallel arrays, to a node. The
+// min/max arrays are only read for tracks typed YGGridTrackTypeMinmax.
+static void setGridTracks(
+    JNIEnv* env,
+    jlong nativePointer,
+    jintArray types,
+    jfloatArray values,
+    jintArray minTypes,
+    jfloatArray minValues,
+    jintArray maxTypes,
+    jfloatArray maxValues,
+    GridTrackCountFn setCount,
+    GridTrackFn setTrack,
+    GridTrackMinMaxFn setTrackMinMax) {
+  YGNodeRef node = _jlong2YGNodeRef(nativePointer);
+
+  jint* typesArr = env->GetIntArrayElements(types, nullptr);
+  jfloat* valuesArr = env->GetFloatArrayElements(values, nullptr);
+  jint* minTypesArr = env->GetIntArrayElements(minTypes, nullptr);
+  jfloat* minValuesArr = env->GetFloatArrayElements(minValues, nullptr);
+  jint* maxTypesArr = env->GetIntArrayElements(maxTypes, nullptr);
+  jfloat* maxValuesArr = env->GetFloatArrayElements(maxValues, nullptr);
+  const jsize length = env->GetArrayLength(types);
+
+  setCount(node, static_cast<size_t>(length));
+  for (jsize i = 0; i < length; i++) {
+    const auto index = static_cast<size_t>(i);
+    if (typesArr[i] == YGGridTrackTypeMinmax) {
+      setTrackMinMax(
+          node,
+          index,
+          static_cast<YGGridTrackType>(minTypesArr[i]),
+          minValuesArr[i],
+          static_cast<YGGridTrackType>(maxTypesArr[i]),
+          maxValuesArr[i]);
+    } else {
+      setTrack(
+          node, index, static_cast<YGGridTrackType>(typesArr[i]), valuesArr[i]);
+    }
+  }
+
+  env->ReleaseIntArrayElements(types, typesArr, JNI_ABORT);
+  env->ReleaseFloatArrayElements(values, valuesArr, JNI_ABORT);
+  env->ReleaseIntArrayElements(minTypes, minTypesArr, JNI_ABORT);
+  env->ReleaseFloatArrayElements(minValues, minValuesArr, JNI_ABORT);
+  env->ReleaseIntArrayElements(maxTypes, maxTypesArr, JNI_ABORT);
+  env->ReleaseFloatArrayElements(maxValues, maxValuesArr, JNI_ABORT);
+}
+
+static void jni_YGNodeStyleSetGridTemplateColumnsJNI(
+    JNIEnv* env,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jintArray types,
+    jfloatArray values,
+    jintArray minTypes,
+    jfloatArray minValues,
+    jintArray maxTypes,
+    jfloatArray maxValues) {
+  setGridTracks(
+      env,
+      nativePointer,
+      types,
+      values,
+      minTypes,
+      minValues,
+      maxTypes,
+      maxValues,
+      YGNodeStyleSetGridTemplateColumnsCount,
+      YGNodeStyleSetGridTemplateColumn,
+      YGNodeStyleSetGridTemplateColumnMinMax);
+}
+
+static void jni_YGNodeStyleSetGridTemplateRowsJNI(
+    JNIEnv* env,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jintArray types,
+    jfloatArray values,
+    jintArray minTypes,
+    jfloatArray minValues,
+    jintArray maxTypes,
+    jfloatArray maxValues) {
+  setGridTracks(
+      env,
+      nativePointer,
+      types,
+      values,
+      minTypes,
+      minValues,
+      maxTypes,
+      maxValues,
+      YGNodeStyleSetGridTemplateRowsCount,
+      YGNodeStyleSetGridTemplateRow,
+      YGNodeStyleSetGridTemplateRowMinMax);
+}
+
+static void jni_YGNodeStyleSetGridAutoColumnsJNI(
+    JNIEnv* env,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jintArray types,
+    jfloatArray values,
+    jintArray minTypes,
+    jfloatArray minValues,
+    jintArray maxTypes,
+    jfloatArray maxValues) {
+  setGridTracks(
+      env,
+      nativePointer,
+      types,
+      values,
+      minTypes,
+      minValues,
+      maxTypes,
+      maxValues,
+      YGNodeStyleSetGridAutoColumnsCount,
+      YGNodeStyleSetGridAutoColumn,
+      YGNodeStyleSetGridAutoColumnMinMax);
+}
+
+static void jni_YGNodeStyleSetGridAutoRowsJNI(
+    JNIEnv* env,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jintArray types,
+    jfloatArray values,
+    jintArray minTypes,
+    jfloatArray minValues,
+    jintArray maxTypes,
+    jfloatArray maxValues) {
+  setGridTracks(
+      env,
+      nativePointer,
+      types,
+      values,
+      minTypes,
+      minValues,
+      maxTypes,
+      maxValues,
+      YGNodeStyleSetGridAutoRowsCount,
+      YGNodeStyleSetGridAutoRow,
+      YGNodeStyleSetGridAutoRowMinMax);
+}
+
+static void jni_YGNodeStyleSetGridColumnStartJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint value) {
+  YGNodeStyleSetGridColumnStart(_jlong2YGNodeRef(nativePointer), value);
+}
+
+static void jni_YGNodeStyleSetGridColumnStartSpanJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint span) {
+  YGNodeStyleSetGridColumnStartSpan(_jlong2YGNodeRef(nativePointer), span);
+}
+
+static void jni_YGNodeStyleSetGridColumnEndJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint value) {
+  YGNodeStyleSetGridColumnEnd(_jlong2YGNodeRef(nativePointer), value);
+}
+
+static void jni_YGNodeStyleSetGridColumnEndSpanJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint span) {
+  YGNodeStyleSetGridColumnEndSpan(_jlong2YGNodeRef(nativePointer), span);
+}
+
+static void jni_YGNodeStyleSetGridRowStartJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint value) {
+  YGNodeStyleSetGridRowStart(_jlong2YGNodeRef(nativePointer), value);
+}
+
+static void jni_YGNodeStyleSetGridRowStartSpanJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint span) {
+  YGNodeStyleSetGridRowStartSpan(_jlong2YGNodeRef(nativePointer), span);
+}
+
+static void jni_YGNodeStyleSetGridRowEndJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint value) {
+  YGNodeStyleSetGridRowEnd(_jlong2YGNodeRef(nativePointer), value);
+}
+
+static void jni_YGNodeStyleSetGridRowEndSpanJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jint span) {
+  YGNodeStyleSetGridRowEndSpan(_jlong2YGNodeRef(nativePointer), span);
+}
+
 // NOLINTNEXTLINE(facebook-hte-CArray, modernize-avoid-c-arrays)
 static JNINativeMethod methods[] = {
     {"jni_YGConfigNewJNI", "()J", (void*)jni_YGConfigNewJNI},
@@ -899,6 +1115,18 @@ static JNINativeMethod methods[] = {
     {"jni_YGNodeStyleSetJustifyContentJNI",
      "(JI)V",
      (void*)jni_YGNodeStyleSetJustifyContentJNI},
+    {"jni_YGNodeStyleGetJustifyItemsJNI",
+     "(J)I",
+     (void*)jni_YGNodeStyleGetJustifyItemsJNI},
+    {"jni_YGNodeStyleSetJustifyItemsJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetJustifyItemsJNI},
+    {"jni_YGNodeStyleGetJustifySelfJNI",
+     "(J)I",
+     (void*)jni_YGNodeStyleGetJustifySelfJNI},
+    {"jni_YGNodeStyleSetJustifySelfJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetJustifySelfJNI},
     {"jni_YGNodeStyleGetAlignItemsJNI",
      "(J)I",
      (void*)jni_YGNodeStyleGetAlignItemsJNI},
@@ -1167,6 +1395,42 @@ static JNINativeMethod methods[] = {
      "(JZ)V",
      (void*)jni_YGNodeSetAlwaysFormsContainingBlockJNI},
     {"jni_YGNodeCloneJNI", "(J)J", (void*)jni_YGNodeCloneJNI},
+    {"jni_YGNodeStyleSetGridTemplateColumnsJNI",
+     "(J[I[F[I[F[I[F)V",
+     (void*)jni_YGNodeStyleSetGridTemplateColumnsJNI},
+    {"jni_YGNodeStyleSetGridTemplateRowsJNI",
+     "(J[I[F[I[F[I[F)V",
+     (void*)jni_YGNodeStyleSetGridTemplateRowsJNI},
+    {"jni_YGNodeStyleSetGridAutoColumnsJNI",
+     "(J[I[F[I[F[I[F)V",
+     (void*)jni_YGNodeStyleSetGridAutoColumnsJNI},
+    {"jni_YGNodeStyleSetGridAutoRowsJNI",
+     "(J[I[F[I[F[I[F)V",
+     (void*)jni_YGNodeStyleSetGridAutoRowsJNI},
+    {"jni_YGNodeStyleSetGridColumnStartJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridColumnStartJNI},
+    {"jni_YGNodeStyleSetGridColumnStartSpanJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridColumnStartSpanJNI},
+    {"jni_YGNodeStyleSetGridColumnEndJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridColumnEndJNI},
+    {"jni_YGNodeStyleSetGridColumnEndSpanJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridColumnEndSpanJNI},
+    {"jni_YGNodeStyleSetGridRowStartJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridRowStartJNI},
+    {"jni_YGNodeStyleSetGridRowStartSpanJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridRowStartSpanJNI},
+    {"jni_YGNodeStyleSetGridRowEndJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridRowEndJNI},
+    {"jni_YGNodeStyleSetGridRowEndSpanJNI",
+     "(JI)V",
+     (void*)jni_YGNodeStyleSetGridRowEndSpanJNI},
 };
 
 void YGJNIVanilla::registerNatives(JNIEnv* env) {

@@ -222,6 +222,18 @@ public abstract class YogaNodeJNIBase : YogaNode, Cloneable {
       YogaNative.jni_YGNodeStyleSetJustifyContentJNI(nativePointer, value.intValue())
     }
 
+  override var justifyItems: YogaJustify
+    get() = YogaJustify.fromInt(YogaNative.jni_YGNodeStyleGetJustifyItemsJNI(nativePointer))
+    set(value) {
+      YogaNative.jni_YGNodeStyleSetJustifyItemsJNI(nativePointer, value.intValue())
+    }
+
+  override var justifySelf: YogaJustify
+    get() = YogaJustify.fromInt(YogaNative.jni_YGNodeStyleGetJustifySelfJNI(nativePointer))
+    set(value) {
+      YogaNative.jni_YGNodeStyleSetJustifySelfJNI(nativePointer, value.intValue())
+    }
+
   override var alignItems: YogaAlign
     get() = YogaAlign.fromInt(YogaNative.jni_YGNodeStyleGetAlignItemsJNI(nativePointer))
     set(value) {
@@ -737,6 +749,83 @@ public abstract class YogaNodeJNIBase : YogaNode, Cloneable {
 
   override fun setGapPercent(gutter: YogaGutter, gapLength: Float) {
     YogaNative.jni_YGNodeStyleSetGapPercentJNI(nativePointer, gutter.intValue(), gapLength)
+  }
+
+  override fun setGridTemplateColumns(trackList: YogaGridTrackList) {
+    applyTracks(trackList, YogaNative::jni_YGNodeStyleSetGridTemplateColumnsJNI)
+  }
+
+  override fun setGridTemplateRows(trackList: YogaGridTrackList) {
+    applyTracks(trackList, YogaNative::jni_YGNodeStyleSetGridTemplateRowsJNI)
+  }
+
+  override fun setGridAutoColumns(trackList: YogaGridTrackList) {
+    applyTracks(trackList, YogaNative::jni_YGNodeStyleSetGridAutoColumnsJNI)
+  }
+
+  override fun setGridAutoRows(trackList: YogaGridTrackList) {
+    applyTracks(trackList, YogaNative::jni_YGNodeStyleSetGridAutoRowsJNI)
+  }
+
+  /** Flattens a track list into the parallel arrays the JNI layer reads. */
+  private inline fun applyTracks(
+      trackList: YogaGridTrackList,
+      set: (Long, IntArray, FloatArray, IntArray, FloatArray, IntArray, FloatArray) -> Unit,
+  ) {
+    val size = trackList.size
+    val types = IntArray(size)
+    val values = FloatArray(size)
+    val minTypes = IntArray(size)
+    val minValues = FloatArray(size)
+    val maxTypes = IntArray(size)
+    val maxValues = FloatArray(size)
+
+    for (i in 0 until size) {
+      val track = trackList[i]
+      types[i] = track.type.intValue()
+      values[i] = track.value
+      if (track.type == YogaGridTrackType.MINMAX) {
+        val min = checkNotNull(track.min)
+        val max = checkNotNull(track.max)
+        minTypes[i] = min.type.intValue()
+        minValues[i] = min.value
+        maxTypes[i] = max.type.intValue()
+        maxValues[i] = max.value
+      }
+    }
+    set(nativePointer, types, values, minTypes, minValues, maxTypes, maxValues)
+  }
+
+  override fun setGridColumnStart(value: Int) {
+    YogaNative.jni_YGNodeStyleSetGridColumnStartJNI(nativePointer, value)
+  }
+
+  override fun setGridColumnStartSpan(span: Int) {
+    YogaNative.jni_YGNodeStyleSetGridColumnStartSpanJNI(nativePointer, span)
+  }
+
+  override fun setGridColumnEnd(value: Int) {
+    YogaNative.jni_YGNodeStyleSetGridColumnEndJNI(nativePointer, value)
+  }
+
+  override fun setGridColumnEndSpan(span: Int) {
+    YogaNative.jni_YGNodeStyleSetGridColumnEndSpanJNI(nativePointer, span)
+  }
+
+  override fun setGridRowStart(value: Int) {
+    YogaNative.jni_YGNodeStyleSetGridRowStartJNI(nativePointer, value)
+  }
+
+  override fun setGridRowStartSpan(span: Int) {
+    YogaNative.jni_YGNodeStyleSetGridRowStartSpanJNI(nativePointer, span)
+  }
+
+  override fun setGridRowEnd(value: Int) {
+    YogaNative.jni_YGNodeStyleSetGridRowEndJNI(nativePointer, value)
+  }
+
+  override fun setGridRowEndSpan(span: Int) {
+    YogaNative.jni_YGNodeStyleSetGridRowEndSpanJNI(nativePointer, span)
   }
 
   public companion object {
