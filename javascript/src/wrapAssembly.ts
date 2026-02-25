@@ -20,6 +20,7 @@ import type {
   Errata,
   ExperimentalFeature,
   FlexDirection,
+  GridTrackType,
   Gutter,
   Justify,
   MeasureMode,
@@ -47,6 +48,39 @@ type Value = {
   unit: Unit;
   value: number;
 };
+
+type GridTrackValue = {
+  type: GridTrackType;
+  value?: number;
+  min?: GridTrackValue;
+  max?: GridTrackValue;
+};
+
+// Grid track lists are set by count, then one call per track. `minmax()` tracks
+// carry their bounds instead of a single value, so they take the paired setter.
+function setGridTracks(
+  ptr: number,
+  tracks: GridTrackValue[],
+  setCount,
+  setTrack,
+  setTrackMinMax,
+): void {
+  setCount(ptr, tracks.length);
+  tracks.forEach((track, index) => {
+    if (track.type === YGEnums.GRID_TRACK_TYPE_MINMAX) {
+      setTrackMinMax(
+        ptr,
+        index,
+        track.min.type,
+        track.min.value ?? 0,
+        track.max.type,
+        track.max.value ?? 0,
+      );
+    } else {
+      setTrack(ptr, index, track.type, track.value ?? 0);
+    }
+  });
+}
 
 export type Config = {
   isExperimentalFeatureEnabled(feature: ExperimentalFeature): boolean;
@@ -169,6 +203,8 @@ export type Node = {
   setHeightPercent(height: number | undefined): void;
   setHeightStretch(): void;
   setJustifyContent(justifyContent: Justify): void;
+  setJustifyItems(justifyItems: Justify): void;
+  setJustifySelf(justifySelf: Justify): void;
   setGap(gutter: Gutter, gapLength: number | `${number}%` | undefined): Value;
   setGapPercent(gutter: Gutter, gapLength: number | undefined): Value;
   setMargin(
@@ -257,6 +293,18 @@ export type Node = {
   unsetDirtiedFunc(): void;
   unsetMeasureFunc(): void;
   setAlwaysFormsContainingBlock(alwaysFormsContainingBlock: boolean): void;
+  setGridTemplateColumns(tracks: GridTrackValue[]): void;
+  setGridTemplateRows(tracks: GridTrackValue[]): void;
+  setGridAutoColumns(tracks: GridTrackValue[]): void;
+  setGridAutoRows(tracks: GridTrackValue[]): void;
+  setGridColumnStart(value: number): void;
+  setGridColumnStartSpan(span: number): void;
+  setGridColumnEnd(value: number): void;
+  setGridColumnEndSpan(span: number): void;
+  setGridRowStart(value: number): void;
+  setGridRowStartSpan(span: number): void;
+  setGridRowEnd(value: number): void;
+  setGridRowEndSpan(span: number): void;
 };
 
 export type Yoga = {
@@ -514,6 +562,86 @@ export default function wrapAssembly(lib: any): Yoga {
 
     setJustifyContent(justifyContent: Justify): void {
       lib._YGNodeStyleSetJustifyContent(this._ptr, justifyContent);
+    }
+
+    setJustifyItems(justifyItems: Justify): void {
+      lib._YGNodeStyleSetJustifyItems(this._ptr, justifyItems);
+    }
+
+    setJustifySelf(justifySelf: Justify): void {
+      lib._YGNodeStyleSetJustifySelf(this._ptr, justifySelf);
+    }
+
+    setGridTemplateColumns(tracks: GridTrackValue[]): void {
+      setGridTracks(
+        this._ptr,
+        tracks,
+        lib._YGNodeStyleSetGridTemplateColumnsCount,
+        lib._YGNodeStyleSetGridTemplateColumn,
+        lib._YGNodeStyleSetGridTemplateColumnMinMax,
+      );
+    }
+
+    setGridTemplateRows(tracks: GridTrackValue[]): void {
+      setGridTracks(
+        this._ptr,
+        tracks,
+        lib._YGNodeStyleSetGridTemplateRowsCount,
+        lib._YGNodeStyleSetGridTemplateRow,
+        lib._YGNodeStyleSetGridTemplateRowMinMax,
+      );
+    }
+
+    setGridAutoColumns(tracks: GridTrackValue[]): void {
+      setGridTracks(
+        this._ptr,
+        tracks,
+        lib._YGNodeStyleSetGridAutoColumnsCount,
+        lib._YGNodeStyleSetGridAutoColumn,
+        lib._YGNodeStyleSetGridAutoColumnMinMax,
+      );
+    }
+
+    setGridAutoRows(tracks: GridTrackValue[]): void {
+      setGridTracks(
+        this._ptr,
+        tracks,
+        lib._YGNodeStyleSetGridAutoRowsCount,
+        lib._YGNodeStyleSetGridAutoRow,
+        lib._YGNodeStyleSetGridAutoRowMinMax,
+      );
+    }
+
+    setGridColumnStart(value: number): void {
+      lib._YGNodeStyleSetGridColumnStart(this._ptr, value);
+    }
+
+    setGridColumnStartSpan(span: number): void {
+      lib._YGNodeStyleSetGridColumnStartSpan(this._ptr, span);
+    }
+
+    setGridColumnEnd(value: number): void {
+      lib._YGNodeStyleSetGridColumnEnd(this._ptr, value);
+    }
+
+    setGridColumnEndSpan(span: number): void {
+      lib._YGNodeStyleSetGridColumnEndSpan(this._ptr, span);
+    }
+
+    setGridRowStart(value: number): void {
+      lib._YGNodeStyleSetGridRowStart(this._ptr, value);
+    }
+
+    setGridRowStartSpan(span: number): void {
+      lib._YGNodeStyleSetGridRowStartSpan(this._ptr, span);
+    }
+
+    setGridRowEnd(value: number): void {
+      lib._YGNodeStyleSetGridRowEnd(this._ptr, value);
+    }
+
+    setGridRowEndSpan(span: number): void {
+      lib._YGNodeStyleSetGridRowEndSpan(this._ptr, span);
     }
 
     setDirection(direction: Direction): void {
