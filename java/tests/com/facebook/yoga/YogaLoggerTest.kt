@@ -23,8 +23,8 @@ class YogaLoggerTest {
     config.setLogger(logger)
 
     val root = YogaNodeFactory.create(config)
-    root.flexDirection = YogaFlexDirection.ROW
-    root.alignItems = YogaAlign.BASELINE
+    root.setFlexDirection(YogaFlexDirection.ROW)
+    root.setAlignItems(YogaAlign.BASELINE)
 
     val child1 = YogaNodeFactory.create(config)
     root.addChildAt(child1, 0)
