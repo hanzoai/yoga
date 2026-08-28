@@ -7,7 +7,7 @@
  * @format
  */
 
-import type {ValueWithUnit, LayoutNode} from '../types.ts';
+import type {ValueWithUnit, GridTrack, LayoutNode} from '../types.ts';
 import {
   parseStyleAttribute,
   applyStyles,
@@ -98,6 +98,8 @@ export default abstract class Emitter {
   abstract setDirection(node: string, value: string): void;
   abstract setFlexDirection(node: string, value: string): void;
   abstract setJustifyContent(node: string, value: string): void;
+  abstract setJustifyItems(node: string, value: string): void;
+  abstract setJustifySelf(node: string, value: string): void;
   abstract setAlignContent(node: string, value: string): void;
   abstract setAlignItems(node: string, value: string): void;
   abstract setAlignSelf(node: string, value: string): void;
@@ -121,6 +123,20 @@ export default abstract class Emitter {
   abstract setBorder(node: string, edge: string, value: ValueWithUnit): void;
   abstract setGap(node: string, gutter: string, value: ValueWithUnit): void;
   abstract setAspectRatio(node: string, value: ValueWithUnit): void;
+
+  // Grid
+  abstract setGridTemplateColumns(node: string, tracks: GridTrack[]): void;
+  abstract setGridTemplateRows(node: string, tracks: GridTrack[]): void;
+  abstract setGridAutoColumns(node: string, tracks: GridTrack[]): void;
+  abstract setGridAutoRows(node: string, tracks: GridTrack[]): void;
+  abstract setGridColumnStart(node: string, value: number): void;
+  abstract setGridColumnStartSpan(node: string, value: number): void;
+  abstract setGridColumnEnd(node: string, value: number): void;
+  abstract setGridColumnEndSpan(node: string, value: number): void;
+  abstract setGridRowStart(node: string, value: number): void;
+  abstract setGridRowStartSpan(node: string, value: number): void;
+  abstract setGridRowEnd(node: string, value: number): void;
+  abstract setGridRowEndSpan(node: string, value: number): void;
 
   /**
    * Generate test code for a complete fixture.

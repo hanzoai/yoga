@@ -8,7 +8,7 @@
  */
 
 import Emitter from './Emitter.ts';
-import type {ValueWithUnit} from '../types.ts';
+import type {ValueWithUnit, GridTrack, GridTrackValue} from '../types.ts';
 
 function toValueJava(value: string | number): string {
   const n = value.toString().replace('px', '').replace('%', '');
@@ -67,6 +67,21 @@ function toJavaUpper(symbol: string): string {
   return out;
 }
 
+function formatGridTrackValueJava(track: GridTrackValue): string {
+  switch (track.type) {
+    case 'auto':
+      return 'YogaGridTrackValue.auto()';
+    case 'points':
+      return `YogaGridTrackValue.points(${toValueJava(track.value)}f)`;
+    case 'percent':
+      return `YogaGridTrackValue.percent(${toValueJava(track.value)}f)`;
+    case 'fr':
+      return `YogaGridTrackValue.fr(${toValueJava(track.value)}f)`;
+    default:
+      return 'YogaGridTrackValue.auto()';
+  }
+}
+
 export class JavaEmitter extends Emitter {
   private static enumMap: Record<string, string> = {
     YGAlignAuto: 'YogaAlign.AUTO',
@@ -78,6 +93,8 @@ export class JavaEmitter extends Emitter {
     YGAlignSpaceAround: 'YogaAlign.SPACE_AROUND',
     YGAlignSpaceEvenly: 'YogaAlign.SPACE_EVENLY',
     YGAlignBaseline: 'YogaAlign.BASELINE',
+    YGAlignStart: 'YogaAlign.START',
+    YGAlignEnd: 'YogaAlign.END',
     YGDirectionInherit: 'YogaDirection.INHERIT',
     YGDirectionLTR: 'YogaDirection.LTR',
     YGDirectionRTL: 'YogaDirection.RTL',
@@ -103,6 +120,10 @@ export class JavaEmitter extends Emitter {
     YGJustifySpaceAround: 'YogaJustify.SPACE_AROUND',
     YGJustifySpaceBetween: 'YogaJustify.SPACE_BETWEEN',
     YGJustifySpaceEvenly: 'YogaJustify.SPACE_EVENLY',
+    YGJustifyStretch: 'YogaJustify.STRETCH',
+    YGJustifyStart: 'YogaJustify.START',
+    YGJustifyEnd: 'YogaJustify.END',
+    YGJustifyAuto: 'YogaJustify.AUTO',
     YGOverflowHidden: 'YogaOverflow.HIDDEN',
     YGOverflowVisible: 'YogaOverflow.VISIBLE',
     YGOverflowScroll: 'YogaOverflow.SCROLL',
@@ -115,6 +136,7 @@ export class JavaEmitter extends Emitter {
     YGDisplayFlex: 'YogaDisplay.FLEX',
     YGDisplayNone: 'YogaDisplay.NONE',
     YGDisplayContents: 'YogaDisplay.CONTENTS',
+    YGDisplayGrid: 'YogaDisplay.GRID',
     YGBoxSizingBorderBox: 'YogaBoxSizing.BORDER_BOX',
     YGBoxSizingContentBox: 'YogaBoxSizing.CONTENT_BOX',
   };
@@ -270,6 +292,14 @@ export class JavaEmitter extends Emitter {
 
   setJustifyContent(node: string, value: string): void {
     this.push(node + '.setJustifyContent(' + this.tr(value) + ');');
+  }
+
+  setJustifyItems(node: string, value: string): void {
+    this.push(node + '.setJustifyItems(' + this.tr(value) + ');');
+  }
+
+  setJustifySelf(node: string, value: string): void {
+    this.push(node + '.setJustifySelf(' + this.tr(value) + ');');
   }
 
   setAlignContent(node: string, value: string): void {
@@ -465,5 +495,85 @@ export class JavaEmitter extends Emitter {
   setAspectRatio(node: string, value: ValueWithUnit): void {
     const v = valueWithUnitToString(value);
     this.push(node + '.setAspectRatio(' + v + 'f);');
+  }
+
+  private emitGridTrackList(
+    node: string,
+    varName: string,
+    setterName: string,
+    tracks: GridTrack[],
+  ): void {
+    this.push(`YogaGridTrackList ${node}${varName} = new YogaGridTrackList();`);
+    for (const track of tracks) {
+      if (track.type === 'minmax') {
+        const minVal = formatGridTrackValueJava(track.min);
+        const maxVal = formatGridTrackValueJava(track.max);
+        this.push(
+          `${node}${varName}.addTrack(YogaGridTrackValue.minMax(${minVal}, ${maxVal}));`,
+        );
+      } else {
+        const val = formatGridTrackValueJava(track);
+        this.push(`${node}${varName}.addTrack(${val});`);
+      }
+    }
+    this.push(`${node}.set${setterName}(${node}${varName});`);
+  }
+
+  setGridTemplateColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(
+      node,
+      'GridTemplateColumns',
+      'GridTemplateColumns',
+      tracks,
+    );
+  }
+
+  setGridTemplateRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(
+      node,
+      'GridTemplateRows',
+      'GridTemplateRows',
+      tracks,
+    );
+  }
+
+  setGridAutoColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoColumns', 'GridAutoColumns', tracks);
+  }
+
+  setGridAutoRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoRows', 'GridAutoRows', tracks);
+  }
+
+  setGridColumnStart(node: string, value: number): void {
+    this.push(`${node}.setGridColumnStart(${value});`);
+  }
+
+  setGridColumnStartSpan(node: string, value: number): void {
+    this.push(`${node}.setGridColumnStartSpan(${value});`);
+  }
+
+  setGridColumnEnd(node: string, value: number): void {
+    this.push(`${node}.setGridColumnEnd(${value});`);
+  }
+
+  setGridColumnEndSpan(node: string, value: number): void {
+    this.push(`${node}.setGridColumnEndSpan(${value});`);
+  }
+
+  setGridRowStart(node: string, value: number): void {
+    this.push(`${node}.setGridRowStart(${value});`);
+  }
+
+  setGridRowStartSpan(node: string, value: number): void {
+    this.push(`${node}.setGridRowStartSpan(${value});`);
+  }
+
+  setGridRowEnd(node: string, value: number): void {
+    this.push(`${node}.setGridRowEnd(${value});`);
+  }
+
+  setGridRowEndSpan(node: string, value: number): void {
+    this.push(`${node}.setGridRowEndSpan(${value});`);
   }
 }

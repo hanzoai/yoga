@@ -8,7 +8,7 @@
  */
 
 import Emitter from './Emitter.ts';
-import type {ValueWithUnit} from '../types.ts';
+import type {ValueWithUnit, GridTrack, GridTrackValue} from '../types.ts';
 
 function toValueJavascript(value: ValueWithUnit): string {
   switch (value.type) {
@@ -29,6 +29,21 @@ function toValueJavascript(value: ValueWithUnit): string {
   }
 }
 
+function formatGridTrackValueJS(track: GridTrackValue): string {
+  switch (track.type) {
+    case 'auto':
+      return '{type: GridTrackType.Auto}';
+    case 'points':
+      return `{type: GridTrackType.Points, value: ${track.value}}`;
+    case 'percent':
+      return `{type: GridTrackType.Percent, value: ${track.value}}`;
+    case 'fr':
+      return `{type: GridTrackType.Fr, value: ${track.value}}`;
+    default:
+      return '{type: GridTrackType.Auto}';
+  }
+}
+
 export class JavascriptEmitter extends Emitter {
   private static enumMap: Record<string, string> = {
     YGAlignAuto: 'Align.Auto',
@@ -40,6 +55,8 @@ export class JavascriptEmitter extends Emitter {
     YGAlignSpaceAround: 'Align.SpaceAround',
     YGAlignSpaceEvenly: 'Align.SpaceEvenly',
     YGAlignBaseline: 'Align.Baseline',
+    YGAlignStart: 'Align.Start',
+    YGAlignEnd: 'Align.End',
     YGDirectionInherit: 'Direction.Inherit',
     YGDirectionLTR: 'Direction.LTR',
     YGDirectionRTL: 'Direction.RTL',
@@ -65,6 +82,10 @@ export class JavascriptEmitter extends Emitter {
     YGJustifySpaceAround: 'Justify.SpaceAround',
     YGJustifySpaceBetween: 'Justify.SpaceBetween',
     YGJustifySpaceEvenly: 'Justify.SpaceEvenly',
+    YGJustifyStretch: 'Justify.Stretch',
+    YGJustifyStart: 'Justify.Start',
+    YGJustifyEnd: 'Justify.End',
+    YGJustifyAuto: 'Justify.Auto',
     YGOverflowHidden: 'Overflow.Hidden',
     YGOverflowVisible: 'Overflow.Visible',
     YGOverflowScroll: 'Overflow.Scroll',
@@ -77,6 +98,7 @@ export class JavascriptEmitter extends Emitter {
     YGDisplayFlex: 'Display.Flex',
     YGDisplayNone: 'Display.None',
     YGDisplayContents: 'Display.Contents',
+    YGDisplayGrid: 'Display.Grid',
     YGBoxSizingBorderBox: 'BoxSizing.BorderBox',
     YGBoxSizingContentBox: 'BoxSizing.ContentBox',
   };
@@ -119,6 +141,7 @@ export class JavascriptEmitter extends Emitter {
     this.push('Errata,');
     this.push('ExperimentalFeature,');
     this.push('FlexDirection,');
+    this.push('GridTrackType,');
     this.push('Gutter,');
     this.push('Justify,');
     this.push('MeasureMode,');
@@ -224,6 +247,14 @@ export class JavascriptEmitter extends Emitter {
 
   setJustifyContent(node: string, value: string): void {
     this.push(node + '.setJustifyContent(' + this.tr(value) + ');');
+  }
+
+  setJustifyItems(node: string, value: string): void {
+    this.push(node + '.setJustifyItems(' + this.tr(value) + ');');
+  }
+
+  setJustifySelf(node: string, value: string): void {
+    this.push(node + '.setJustifySelf(' + this.tr(value) + ');');
   }
 
   setAlignContent(node: string, value: string): void {
@@ -349,5 +380,85 @@ export class JavascriptEmitter extends Emitter {
 
   setAspectRatio(node: string, value: ValueWithUnit): void {
     this.push(node + '.setAspectRatio(' + toValueJavascript(value) + ');');
+  }
+
+  private emitGridTrackList(
+    node: string,
+    varName: string,
+    setterName: string,
+    tracks: GridTrack[],
+  ): void {
+    this.push(`const ${node}${varName} = [];`);
+    for (const track of tracks) {
+      if (track.type === 'minmax') {
+        const minVal = formatGridTrackValueJS(track.min);
+        const maxVal = formatGridTrackValueJS(track.max);
+        this.push(
+          `${node}${varName}.push({type: GridTrackType.Minmax, min: ${minVal}, max: ${maxVal}});`,
+        );
+      } else {
+        const val = formatGridTrackValueJS(track);
+        this.push(`${node}${varName}.push(${val});`);
+      }
+    }
+    this.push(`${node}.set${setterName}(${node}${varName});`);
+  }
+
+  setGridTemplateColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(
+      node,
+      'GridTemplateColumns',
+      'GridTemplateColumns',
+      tracks,
+    );
+  }
+
+  setGridTemplateRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(
+      node,
+      'GridTemplateRows',
+      'GridTemplateRows',
+      tracks,
+    );
+  }
+
+  setGridAutoColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoColumns', 'GridAutoColumns', tracks);
+  }
+
+  setGridAutoRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoRows', 'GridAutoRows', tracks);
+  }
+
+  setGridColumnStart(node: string, value: number): void {
+    this.push(`${node}.setGridColumnStart(${value});`);
+  }
+
+  setGridColumnStartSpan(node: string, value: number): void {
+    this.push(`${node}.setGridColumnStartSpan(${value});`);
+  }
+
+  setGridColumnEnd(node: string, value: number): void {
+    this.push(`${node}.setGridColumnEnd(${value});`);
+  }
+
+  setGridColumnEndSpan(node: string, value: number): void {
+    this.push(`${node}.setGridColumnEndSpan(${value});`);
+  }
+
+  setGridRowStart(node: string, value: number): void {
+    this.push(`${node}.setGridRowStart(${value});`);
+  }
+
+  setGridRowStartSpan(node: string, value: number): void {
+    this.push(`${node}.setGridRowStartSpan(${value});`);
+  }
+
+  setGridRowEnd(node: string, value: number): void {
+    this.push(`${node}.setGridRowEnd(${value});`);
+  }
+
+  setGridRowEndSpan(node: string, value: number): void {
+    this.push(`${node}.setGridRowEndSpan(${value});`);
   }
 }

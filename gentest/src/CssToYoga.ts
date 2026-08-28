@@ -8,7 +8,12 @@
  */
 
 import type Emitter from './emitters/Emitter.ts';
-import type {ParsedStyles, ValueWithUnit} from './types.ts';
+import type {
+  ParsedStyles,
+  ValueWithUnit,
+  GridTrack,
+  GridTrackValue,
+} from './types.ts';
 
 const INVISIBLE_BORDER_STYLES = new Set(['none', 'initial']);
 
@@ -138,6 +143,22 @@ export function applyStyles(
         const mapped = alignValue(value);
         if (mapped !== undefined) {
           emitter.setAlignSelf(nodeName, mapped);
+        }
+        break;
+      }
+
+      case 'justify-items': {
+        const mapped = justifyValue(value);
+        if (mapped !== undefined) {
+          emitter.setJustifyItems(nodeName, mapped);
+        }
+        break;
+      }
+
+      case 'justify-self': {
+        const mapped = justifyValue(value);
+        if (mapped !== undefined) {
+          emitter.setJustifySelf(nodeName, mapped);
         }
         break;
       }
@@ -744,6 +765,88 @@ export function applyStyles(
         }
         break;
       }
+
+      // Grid template
+      case 'grid-template-columns': {
+        if (value && value !== 'none') {
+          const tracks = parseGridTrackList(value);
+          if (tracks && tracks.length > 0) {
+            emitter.setGridTemplateColumns(nodeName, tracks);
+          }
+        }
+        break;
+      }
+      case 'grid-template-rows': {
+        if (value && value !== 'none') {
+          const tracks = parseGridTrackList(value);
+          if (tracks && tracks.length > 0) {
+            emitter.setGridTemplateRows(nodeName, tracks);
+          }
+        }
+        break;
+      }
+      case 'grid-auto-columns': {
+        if (value && value !== 'auto') {
+          const tracks = parseGridTrackList(value);
+          if (tracks && tracks.length > 0) {
+            emitter.setGridAutoColumns(nodeName, tracks);
+          }
+        }
+        break;
+      }
+      case 'grid-auto-rows': {
+        if (value && value !== 'auto') {
+          const tracks = parseGridTrackList(value);
+          if (tracks && tracks.length > 0) {
+            emitter.setGridAutoRows(nodeName, tracks);
+          }
+        }
+        break;
+      }
+
+      // Grid placement - shorthands
+      case 'grid-column': {
+        const [start, end] = parseGridPlacementShorthand(value);
+        if (start !== undefined) {
+          emitGridPlacement(emitter, nodeName, 'column', 'start', start);
+        }
+        if (end !== undefined) {
+          emitGridPlacement(emitter, nodeName, 'column', 'end', end);
+        }
+        break;
+      }
+      case 'grid-row': {
+        const [start, end] = parseGridPlacementShorthand(value);
+        if (start !== undefined) {
+          emitGridPlacement(emitter, nodeName, 'row', 'start', start);
+        }
+        if (end !== undefined) {
+          emitGridPlacement(emitter, nodeName, 'row', 'end', end);
+        }
+        break;
+      }
+
+      // Grid placement - longhands
+      case 'grid-column-start':
+        if (value && value !== 'auto') {
+          emitGridPlacement(emitter, nodeName, 'column', 'start', value);
+        }
+        break;
+      case 'grid-column-end':
+        if (value && value !== 'auto') {
+          emitGridPlacement(emitter, nodeName, 'column', 'end', value);
+        }
+        break;
+      case 'grid-row-start':
+        if (value && value !== 'auto') {
+          emitGridPlacement(emitter, nodeName, 'row', 'start', value);
+        }
+        break;
+      case 'grid-row-end':
+        if (value && value !== 'auto') {
+          emitGridPlacement(emitter, nodeName, 'row', 'end', value);
+        }
+        break;
     }
   }
 }
@@ -916,6 +1019,7 @@ function displayValue(value: string): string {
     flex: 'YGDisplayFlex',
     none: 'YGDisplayNone',
     contents: 'YGDisplayContents',
+    grid: 'YGDisplayGrid',
   };
   return map[value] ?? value;
 }
@@ -952,6 +1056,115 @@ function gutterValue(gutter: string): string {
   return map[gutter] ?? gutter;
 }
 
+// Grid track parsing
+
+export function parseGridTrackList(value: string): GridTrack[] | null {
+  if (!value || value === 'none') return null;
+
+  const tracks: GridTrack[] = [];
+  const parts = value.trim().split(/\s+/);
+
+  let i = 0;
+  while (i < parts.length) {
+    const part = parts[i];
+
+    if (part.startsWith('minmax(')) {
+      let minmaxStr = part;
+      while (!minmaxStr.includes(')') && i < parts.length - 1) {
+        i++;
+        minmaxStr += ' ' + parts[i];
+      }
+
+      const match = minmaxStr.match(/minmax\(([^,]+),\s*([^)]+)\)/);
+      if (match) {
+        const min = match[1].trim();
+        const max = match[2].trim();
+        tracks.push({
+          type: 'minmax',
+          min: parseGridTrackValue(min),
+          max: parseGridTrackValue(max),
+        });
+      }
+    } else {
+      tracks.push(parseGridTrackValue(part));
+    }
+    i++;
+  }
+
+  return tracks;
+}
+
+function parseGridTrackValue(value: string): GridTrackValue {
+  if (value === 'auto') return {type: 'auto'};
+  if (value.endsWith('px')) return {type: 'points', value: parseFloat(value)};
+  if (value.endsWith('%')) return {type: 'percent', value: parseFloat(value)};
+  if (value.endsWith('fr')) return {type: 'fr', value: parseFloat(value)};
+  return {type: 'auto'};
+}
+
+/**
+ * Parse a grid-row or grid-column shorthand value.
+ * Formats: `<start>`, `<start> / <end>`.
+ * Each side can be an integer, `span <int>`, or `auto`.
+ * Returns [start, end] where either may be undefined if auto or absent.
+ */
+function parseGridPlacementShorthand(
+  value: string,
+): [string | undefined, string | undefined] {
+  const parts = value.split('/').map(s => s.trim());
+  const start = parts[0] === 'auto' ? undefined : parts[0];
+  const end =
+    parts.length > 1 ? (parts[1] === 'auto' ? undefined : parts[1]) : undefined;
+  return [start, end];
+}
+
+/**
+ * Emit a grid placement call (start or end, row or column).
+ */
+function emitGridPlacement(
+  emitter: Emitter,
+  nodeName: string,
+  axis: 'row' | 'column',
+  side: 'start' | 'end',
+  value: string,
+): void {
+  if (value.startsWith('span ')) {
+    const n = parseInt(value.substring(5));
+    if (axis === 'column') {
+      if (side === 'start') {
+        emitter.setGridColumnStartSpan(nodeName, n);
+      } else {
+        emitter.setGridColumnEndSpan(nodeName, n);
+      }
+    } else {
+      if (side === 'start') {
+        emitter.setGridRowStartSpan(nodeName, n);
+      } else {
+        emitter.setGridRowEndSpan(nodeName, n);
+      }
+    }
+  } else {
+    const n = parseInt(value);
+    if (axis === 'column') {
+      if (side === 'start') {
+        emitter.setGridColumnStart(nodeName, n);
+      } else {
+        emitter.setGridColumnEnd(nodeName, n);
+      }
+    } else {
+      if (side === 'start') {
+        emitter.setGridRowStart(nodeName, n);
+      } else {
+        emitter.setGridRowEnd(nodeName, n);
+      }
+    }
+  }
+}
+
+/**
+ * Get the flex direction value string for measure function.
+ * Used when emitting setMeasureFunc calls.
+ */
 export function getFlexDirectionForMeasure(styles: ParsedStyles): string {
   const fd = styles.get('flex-direction');
   return flexDirectionValue(fd ?? 'column');

@@ -16,6 +16,15 @@ export type ValueWithUnit =
   | {type: 'stretch'}
   | {type: 'undefined'};
 
+export type GridTrackValue =
+  | {type: 'auto'}
+  | {type: 'points'; value: number}
+  | {type: 'percent'; value: number}
+  | {type: 'fr'; value: number};
+
+export type GridTrack =
+  GridTrackValue | {type: 'minmax'; min: GridTrackValue; max: GridTrackValue};
+
 export type ParsedStyles = Map<string, string>;
 
 export interface LayoutNode {

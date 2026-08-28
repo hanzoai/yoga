@@ -8,7 +8,7 @@
  */
 
 import Emitter from './Emitter.ts';
-import type {ValueWithUnit} from '../types.ts';
+import type {ValueWithUnit, GridTrack, GridTrackValue} from '../types.ts';
 
 function toValueCpp(value: string | number): string {
   const n = value.toString().replace('px', '').replace('%', '');
@@ -52,6 +52,21 @@ function valueWithUnitToString(value: ValueWithUnit): string {
       return 'Stretch';
     case 'undefined':
       return 'YGUndefined';
+  }
+}
+
+// A track is passed to the C API as an (enum, float) pair. `auto` carries no
+// value, so it pairs with 0.
+function gridTrackArgs(track: GridTrackValue): string {
+  switch (track.type) {
+    case 'points':
+      return `YGGridTrackTypePoints, ${toValueCpp(track.value)}`;
+    case 'percent':
+      return `YGGridTrackTypePercent, ${toValueCpp(track.value)}`;
+    case 'fr':
+      return `YGGridTrackTypeFr, ${toValueCpp(track.value)}`;
+    default:
+      return 'YGGridTrackTypeAuto, 0';
   }
 }
 
@@ -190,6 +205,18 @@ export class CppEmitter extends Emitter {
   setJustifyContent(node: string, value: string): void {
     this.push(
       'YGNodeStyleSetJustifyContent(' + node + ', ' + toValueCpp(value) + ');',
+    );
+  }
+
+  setJustifyItems(node: string, value: string): void {
+    this.push(
+      'YGNodeStyleSetJustifyItems(' + node + ', ' + toValueCpp(value) + ');',
+    );
+  }
+
+  setJustifySelf(node: string, value: string): void {
+    this.push(
+      'YGNodeStyleSetJustifySelf(' + node + ', ' + toValueCpp(value) + ');',
     );
   }
 
@@ -448,5 +475,75 @@ export class CppEmitter extends Emitter {
   setAspectRatio(node: string, value: ValueWithUnit): void {
     const v = valueWithUnitToString(value);
     this.push('YGNodeStyleSetAspectRatio(' + node + ', ' + v + ');');
+  }
+
+  // `property` is the plural C API name (GridTemplateColumns); the per-track
+  // setters take its singular (GridTemplateColumn).
+  private emitGridTrackList(
+    node: string,
+    property: string,
+    tracks: GridTrack[],
+  ): void {
+    const track = property.slice(0, -1);
+    this.push(`YGNodeStyleSet${property}Count(${node}, ${tracks.length});`);
+    tracks.forEach((t, index) => {
+      if (t.type === 'minmax') {
+        this.push(
+          `YGNodeStyleSet${track}MinMax(${node}, ${index}, ${gridTrackArgs(t.min)}, ${gridTrackArgs(t.max)});`,
+        );
+      } else {
+        this.push(
+          `YGNodeStyleSet${track}(${node}, ${index}, ${gridTrackArgs(t)});`,
+        );
+      }
+    });
+  }
+
+  setGridTemplateColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridTemplateColumns', tracks);
+  }
+
+  setGridTemplateRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridTemplateRows', tracks);
+  }
+
+  setGridAutoColumns(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoColumns', tracks);
+  }
+
+  setGridAutoRows(node: string, tracks: GridTrack[]): void {
+    this.emitGridTrackList(node, 'GridAutoRows', tracks);
+  }
+
+  setGridColumnStart(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridColumnStart(${node}, ${value});`);
+  }
+
+  setGridColumnStartSpan(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridColumnStartSpan(${node}, ${value});`);
+  }
+
+  setGridColumnEnd(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridColumnEnd(${node}, ${value});`);
+  }
+
+  setGridColumnEndSpan(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridColumnEndSpan(${node}, ${value});`);
+  }
+
+  setGridRowStart(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridRowStart(${node}, ${value});`);
+  }
+
+  setGridRowStartSpan(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridRowStartSpan(${node}, ${value});`);
+  }
+
+  setGridRowEnd(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridRowEnd(${node}, ${value});`);
+  }
+
+  setGridRowEndSpan(node: string, value: number): void {
+    this.push(`YGNodeStyleSetGridRowEndSpan(${node}, ${value});`);
   }
 }
