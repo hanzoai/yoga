@@ -13,7 +13,7 @@ import Yoga, {
   Display,
   Overflow,
   Node as YogaNode,
-} from 'yoga-layout';
+} from '@hanzo/layout';
 import {FlexStyle, applyStyle} from './FlexStyle';
 import LayoutBox from './LayoutBox';
 

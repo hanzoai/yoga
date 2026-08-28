@@ -130,7 +130,7 @@ export class JavascriptEmitter extends Emitter {
 
   emitPrologue(_fixtureName: string): void {
     this.push("import { intrinsicSizeMeasureFunc } from '../tools/utils.ts'");
-    this.push("import Yoga from 'yoga-layout';");
+    this.push("import Yoga from '@hanzo/layout';");
     this.push('import {');
     this.pushIndent();
     this.push('Align,');
@@ -150,7 +150,7 @@ export class JavascriptEmitter extends Emitter {
     this.push('Unit,');
     this.push('Wrap,');
     this.popIndent();
-    this.push("} from 'yoga-layout';");
+    this.push("} from '@hanzo/layout';");
     this.push('');
   }
 

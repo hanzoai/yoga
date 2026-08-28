@@ -8,7 +8,7 @@
 import {getMeasureCounter} from '../tools/MeasureCounter.ts';
 import {YGBENCHMARK} from '../tools/globals.ts';
 
-import Yoga from 'yoga-layout';
+import Yoga from '@hanzo/layout';
 
 const ITERATIONS = 2000;
 

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import {FlexDirection, MeasureMode} from 'yoga-layout';
+import {FlexDirection, MeasureMode} from '@hanzo/layout';
 
 type MeasureContext = {
   text: string;

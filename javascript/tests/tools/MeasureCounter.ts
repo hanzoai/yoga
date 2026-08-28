@@ -7,8 +7,8 @@
  * @format
  */
 
-import type {MeasureFunction} from 'yoga-layout';
-import Yoga from 'yoga-layout';
+import type {MeasureFunction} from '@hanzo/layout';
+import Yoga from '@hanzo/layout';
 
 export type MeasureCounter = {
   inc: MeasureFunction;

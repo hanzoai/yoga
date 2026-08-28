@@ -1,13 +1,16 @@
 {
-  "name": "yoga-layout",
-  "version": "0.0.0",
+  "name": "@hanzo/layout",
+  "version": "3.3.0",
   "description": "An embeddable and performant flexbox layout engine with bindings for multiple languages",
   "license": "MIT",
   "author": "Meta Open Source",
   "homepage": "https://yogalayout.dev/",
   "repository": {
     "type": "git",
-    "url": "git@github.com:facebook/yoga.git"
+    "url": "git@github.com:hanzoai/yoga.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "main": "./src/index.ts",
