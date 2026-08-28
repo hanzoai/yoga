@@ -6,6 +6,9 @@ on:
       - '*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     name: Publish to npmjs registry
@@ -17,8 +20,64 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-js
 
-      - name: Store auth token in config file
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      # The npm credential lives in KMS, read at run time with the same machine
+      # identity the rest of the estate uses. It is written straight to ~/.npmrc
+      # so it never becomes a step output.
+      - name: Fetch the npm token from KMS
+        env:
+          KMS_CLIENT_ID: ${{ secrets.KMS_CLIENT_ID }}
+          KMS_CLIENT_SECRET: ${{ secrets.KMS_CLIENT_SECRET }}
+          KMS_ENDPOINT: ${{ vars.KMS_ENDPOINT || 'https://kms.hanzo.ai' }}
+          KMS_SECRET_ENV: ${{ vars.KMS_SECRET_ENV || 'prod' }}
+          # NPM_TOKEN sits at the org root. Set KMS_NPM_PATH to move it without
+          # editing this file.
+          KMS_NPM_PATH: ${{ vars.KMS_NPM_PATH || '' }}
+        run: |
+          set -uo pipefail
+
+          # Capture status and body together: -f discards the body, which turns
+          # a non-JSON answer into a bare jq parse error that names nothing.
+          body="{\"clientId\":\"${KMS_CLIENT_ID}\",\"clientSecret\":\"${KMS_CLIENT_SECRET}\"}"
+          out=$(curl -sS -w '\n%{http_code}' "${KMS_ENDPOINT}/v1/kms/auth/login" \
+                  -H 'Content-Type: application/json' --data-binary "$body")
+          code=${out##*$'\n'}
+          resp=${out%$'\n'*}
+          if [ "$code" != "200" ]; then
+            echo "::error::KMS login returned HTTP $code: $(printf '%s' "$resp" | head -c 200)"
+            exit 1
+          fi
+          token=$(printf '%s' "$resp" | jq -r '.accessToken // empty' 2>/dev/null || true)
+          if [ -z "$token" ]; then
+            echo "::error::KMS login was 200 but carried no accessToken"
+            exit 1
+          fi
+
+          # The read is org-scoped by the token's owner claim, so the path is
+          # flat and the answer is {name, env, value}.
+          url="${KMS_ENDPOINT}/v1/kms/secrets/${KMS_NPM_PATH:+${KMS_NPM_PATH}/}NPM_TOKEN?env=${KMS_SECRET_ENV}"
+          # Retried only on 5xx: this read can answer with a gateway timeout,
+          # which is transient. A 401/403/404 is a real answer worth reporting.
+          for attempt in 1 2 3 4 5; do
+            out=$(curl -sS -w '\n%{http_code}' "$url" -H "Authorization: Bearer ${token}")
+            code=${out##*$'\n'}
+            resp=${out%$'\n'*}
+            case "$code" in
+              200) break ;;
+              5*)  echo "KMS secret read HTTP $code (attempt $attempt/5); waiting 15s"; sleep 15 ;;
+              *)   break ;;
+            esac
+          done
+          if [ "$code" != "200" ]; then
+            echo "::error::KMS secret read returned HTTP $code at $url: $(printf '%s' "$resp" | head -c 200)"
+            exit 1
+          fi
+          npm_token=$(printf '%s' "$resp" | jq -r '.value // empty' 2>/dev/null || true)
+          if [ -z "$npm_token" ]; then
+            echo "::error::No NPM_TOKEN at $url; set KMS_NPM_PATH to the path that has it"
+            exit 1
+          fi
+          echo "::add-mask::${npm_token}"
+          echo "//registry.npmjs.org/:_authToken=${npm_token}" > ~/.npmrc
 
       # npm, not yarn: yarn 1 publishes against registry.yarnpkg.com, which the
       # auth line above does not cover, and a scoped package that does not exist
