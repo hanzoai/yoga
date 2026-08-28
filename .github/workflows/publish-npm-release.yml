@@ -20,6 +20,9 @@ jobs:
       - name: Store auth token in config file
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
-      - name: yarn publish
-        run: yarn publish
+      # npm, not yarn: yarn 1 publishes against registry.yarnpkg.com, which the
+      # auth line above does not cover, and a scoped package that does not exist
+      # yet then reads back as 404. npm honours publishConfig.access.
+      - name: npm publish
+        run: npm publish
         working-directory: javascript
