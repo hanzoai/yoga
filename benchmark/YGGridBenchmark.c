@@ -105,150 +105,129 @@ static YGSize _measureFixed(
   };
 }
 
-static YGGridTrackListRef createFixed3x100Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPoints(100));
-  YGGridTrackListAddTrack(tracks, YGPoints(100));
-  YGGridTrackListAddTrack(tracks, YGPoints(100));
-  return tracks;
-}
+// A track sizing function. Every track carries a type and a value, except
+// minmax() which carries a bound on each side.
+typedef struct {
+  YGGridTrackType type;
+  float value;
+  YGGridTrackType minType;
+  float minValue;
+  YGGridTrackType maxType;
+  float maxValue;
+} Track;
 
-static YGGridTrackListRef createAuto3Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  return tracks;
-}
+#define POINTS(v) {.type = YGGridTrackTypePoints, .value = (v)}
+#define PERCENT(v) {.type = YGGridTrackTypePercent, .value = (v)}
+#define FR(v) {.type = YGGridTrackTypeFr, .value = (v)}
+#define AUTO {.type = YGGridTrackTypeAuto}
+#define MINMAX(nt, nv, xt, xv)                                        \
+  {.type = YGGridTrackTypeMinmax, .minType = (nt), .minValue = (nv), \
+   .maxType = (xt), .maxValue = (xv)}
 
-static YGGridTrackListRef createFr3Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  return tracks;
-}
+// The three setters that write one axis of a grid's template.
+typedef struct {
+  void (*setCount)(YGNodeRef, size_t);
+  void (*setTrack)(YGNodeRef, size_t, YGGridTrackType, float);
+  void (*setMinMax)(
+      YGNodeRef,
+      size_t,
+      YGGridTrackType,
+      float,
+      YGGridTrackType,
+      float);
+} Axis;
 
-static YGGridTrackListRef createFr4Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  return tracks;
-}
+static const Axis kColumns = {
+    .setCount = YGNodeStyleSetGridTemplateColumnsCount,
+    .setTrack = YGNodeStyleSetGridTemplateColumn,
+    .setMinMax = YGNodeStyleSetGridTemplateColumnMinMax,
+};
 
-static YGGridTrackListRef createFr5Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  return tracks;
-}
+static const Axis kRows = {
+    .setCount = YGNodeStyleSetGridTemplateRowsCount,
+    .setTrack = YGNodeStyleSetGridTemplateRow,
+    .setMinMax = YGNodeStyleSetGridTemplateRowMinMax,
+};
 
-static YGGridTrackListRef createFr2Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  return tracks;
-}
-
-static YGGridTrackListRef createFixed3x80Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPoints(80));
-  YGGridTrackListAddTrack(tracks, YGPoints(80));
-  YGGridTrackListAddTrack(tracks, YGPoints(80));
-  return tracks;
-}
-
-static YGGridTrackListRef createAuto4Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  return tracks;
-}
-
-static YGGridTrackListRef createAuto2Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  YGGridTrackListAddTrack(tracks, YGAuto());
-  return tracks;
-}
-
-static YGGridTrackListRef createPercent3Tracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPercent(25));
-  YGGridTrackListAddTrack(tracks, YGPercent(50));
-  YGGridTrackListAddTrack(tracks, YGPercent(25));
-  return tracks;
-}
-
-static YGGridTrackListRef createPercent3RowTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPercent(33.33f));
-  YGGridTrackListAddTrack(tracks, YGPercent(33.33f));
-  YGGridTrackListAddTrack(tracks, YGPercent(33.33f));
-  return tracks;
-}
-
-static YGGridTrackListRef createMixedColumnTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPoints(200));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGPoints(200));
-  return tracks;
-}
-
-static YGGridTrackListRef createMixedRowTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGPoints(60));
-  YGGridTrackListAddTrack(tracks, YGFr(1));
-  YGGridTrackListAddTrack(tracks, YGPoints(40));
-  return tracks;
-}
-
-static YGGridTrackListRef createMinmaxColumnTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(100), YGFr(1)));
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(100), YGFr(1)));
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(100), YGFr(1)));
-  return tracks;
-}
-
-static YGGridTrackListRef createMinmaxRowTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(50), YGAuto()));
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(50), YGAuto()));
-  YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(50), YGAuto()));
-  return tracks;
-}
-
-static YGGridTrackListRef createMixed20ColumnTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  for (int i = 0; i < 5; i++) {
-    YGGridTrackListAddTrack(tracks, YGPoints(100));
-    YGGridTrackListAddTrack(tracks, YGFr(1));
-    YGGridTrackListAddTrack(tracks, YGAuto());
-    YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(50), YGFr(1)));
+static void applyTracks(
+    YGNodeRef node,
+    const Axis* axis,
+    const Track* tracks,
+    size_t count) {
+  axis->setCount(node, count);
+  for (size_t i = 0; i < count; i++) {
+    const Track* track = &tracks[i];
+    if (track->type == YGGridTrackTypeMinmax) {
+      axis->setMinMax(
+          node,
+          i,
+          track->minType,
+          track->minValue,
+          track->maxType,
+          track->maxValue);
+    } else {
+      axis->setTrack(node, i, track->type, track->value);
+    }
   }
-  return tracks;
 }
 
-static YGGridTrackListRef createMixed50RowTracks(void) {
-  YGGridTrackListRef tracks = YGGridTrackListCreate();
-  for (int i = 0; i < 10; i++) {
-    YGGridTrackListAddTrack(tracks, YGPoints(40));
-    YGGridTrackListAddTrack(tracks, YGFr(1));
-    YGGridTrackListAddTrack(tracks, YGAuto());
-    YGGridTrackListAddTrack(tracks, YGMinMax(YGPoints(30), YGAuto()));
-    YGGridTrackListAddTrack(tracks, YGFr(2));
-  }
-  return tracks;
-}
+#define APPLY(node, axis, tracks) \
+  applyTracks((node), (axis), (tracks), sizeof(tracks) / sizeof(*(tracks)))
+
+static const Track kFixed3x100[] = {POINTS(100), POINTS(100), POINTS(100)};
+static const Track kFixed3x80[] = {POINTS(80), POINTS(80), POINTS(80)};
+static const Track kAuto2[] = {AUTO, AUTO};
+static const Track kAuto3[] = {AUTO, AUTO, AUTO};
+static const Track kAuto4[] = {AUTO, AUTO, AUTO, AUTO};
+static const Track kFr2[] = {FR(1), FR(1)};
+static const Track kFr3[] = {FR(1), FR(1), FR(1)};
+static const Track kFr4[] = {FR(1), FR(1), FR(1), FR(1)};
+static const Track kFr5[] = {FR(1), FR(1), FR(1), FR(1), FR(1)};
+static const Track kPercent3Columns[] = {PERCENT(25), PERCENT(50), PERCENT(25)};
+static const Track kPercent3Rows[] = {
+    PERCENT(33.33f),
+    PERCENT(33.33f),
+    PERCENT(33.33f)};
+static const Track kMixedColumns[] = {POINTS(200), FR(1), POINTS(200)};
+static const Track kMixedRows[] = {POINTS(60), FR(1), POINTS(40)};
+
+#define MINMAX_POINTS_FR(n, x) \
+  MINMAX(YGGridTrackTypePoints, (n), YGGridTrackTypeFr, (x))
+#define MINMAX_POINTS_AUTO(n) \
+  MINMAX(YGGridTrackTypePoints, (n), YGGridTrackTypeAuto, 0)
+
+static const Track kMinmaxColumns[] = {
+    MINMAX_POINTS_FR(100, 1),
+    MINMAX_POINTS_FR(100, 1),
+    MINMAX_POINTS_FR(100, 1)};
+static const Track kMinmaxRows[] = {
+    MINMAX_POINTS_AUTO(50),
+    MINMAX_POINTS_AUTO(50),
+    MINMAX_POINTS_AUTO(50)};
+
+// 5 repeats of a 4-track group, and 10 repeats of a 5-track group.
+#define MIXED_COLUMN_GROUP POINTS(100), FR(1), AUTO, MINMAX_POINTS_FR(50, 1)
+#define MIXED_ROW_GROUP \
+  POINTS(40), FR(1), AUTO, MINMAX_POINTS_AUTO(30), FR(2)
+
+static const Track kMixed20Columns[] = {
+    MIXED_COLUMN_GROUP,
+    MIXED_COLUMN_GROUP,
+    MIXED_COLUMN_GROUP,
+    MIXED_COLUMN_GROUP,
+    MIXED_COLUMN_GROUP};
+
+static const Track kMixed50Rows[] = {
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP,
+    MIXED_ROW_GROUP};
 
 YGBENCHMARKS({
   // Scenario 1: Basic fixed-size grid
@@ -257,8 +236,8 @@ YGBENCHMARKS({
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 300);
     YGNodeStyleSetHeight(root, 300);
-    YGNodeStyleSetGridTemplateColumns(root, createFixed3x100Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFixed3x100Tracks());
+    APPLY(root, &kColumns, kFixed3x100);
+    APPLY(root, &kRows, kFixed3x100);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -273,8 +252,8 @@ YGBENCHMARKS({
   YGBENCHMARK("Grid 3x3 auto tracks", {
     YGNodeRef root = YGNodeNew();
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
-    YGNodeStyleSetGridTemplateColumns(root, createAuto3Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createAuto3Tracks());
+    APPLY(root, &kColumns, kAuto3);
+    APPLY(root, &kRows, kAuto3);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -292,8 +271,8 @@ YGBENCHMARKS({
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 300);
     YGNodeStyleSetHeight(root, 300);
-    YGNodeStyleSetGridTemplateColumns(root, createFr3Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFr3Tracks());
+    APPLY(root, &kColumns, kFr3);
+    APPLY(root, &kRows, kFr3);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -311,8 +290,8 @@ YGBENCHMARKS({
     YGNodeStyleSetWidth(root, 400);
     YGNodeStyleSetHeight(root, 400);
     YGNodeStyleSetGap(root, YGGutterAll, 10);
-    YGNodeStyleSetGridTemplateColumns(root, createFr4Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFr4Tracks());
+    APPLY(root, &kColumns, kFr4);
+    APPLY(root, &kRows, kFr4);
 
     for (uint32_t i = 0; i < 16; i++) {
       YGNodeRef child = YGNodeNew();
@@ -329,8 +308,8 @@ YGBENCHMARKS({
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 800);
     YGNodeStyleSetHeight(root, 600);
-    YGNodeStyleSetGridTemplateColumns(root, createMixedColumnTracks());
-    YGNodeStyleSetGridTemplateRows(root, createMixedRowTracks());
+    APPLY(root, &kColumns, kMixedColumns);
+    APPLY(root, &kRows, kMixedRows);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -348,8 +327,8 @@ YGBENCHMARKS({
     YGNodeStyleSetWidth(root, 400);
     YGNodeStyleSetHeight(root, 400);
     YGNodeStyleSetGap(root, YGGutterAll, 8);
-    YGNodeStyleSetGridTemplateColumns(root, createFr4Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFr4Tracks());
+    APPLY(root, &kColumns, kFr4);
+    APPLY(root, &kRows, kFr4);
 
     YGNodeRef child1 = YGNodeNew();
     YGNodeStyleSetGridColumnStart(child1, 1);
@@ -383,8 +362,8 @@ YGBENCHMARKS({
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 500);
     YGNodeStyleSetHeight(root, 500);
-    YGNodeStyleSetGridTemplateColumns(root, createFr5Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFr5Tracks());
+    APPLY(root, &kColumns, kFr5);
+    APPLY(root, &kRows, kFr5);
 
     for (uint32_t i = 0; i < 25; i++) {
       YGNodeRef child = YGNodeNew();
@@ -402,15 +381,15 @@ YGBENCHMARKS({
     YGNodeStyleSetWidth(root, 600);
     YGNodeStyleSetHeight(root, 600);
     YGNodeStyleSetGap(root, YGGutterAll, 10);
-    YGNodeStyleSetGridTemplateColumns(root, createFr3Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFr3Tracks());
+    APPLY(root, &kColumns, kFr3);
+    APPLY(root, &kRows, kFr3);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
       YGNodeStyleSetDisplay(child, YGDisplayGrid);
       YGNodeStyleSetGap(child, YGGutterAll, 4);
-      YGNodeStyleSetGridTemplateColumns(child, createFr2Tracks());
-      YGNodeStyleSetGridTemplateRows(child, createFr2Tracks());
+      APPLY(child, &kColumns, kFr2);
+      APPLY(child, &kRows, kFr2);
       YGNodeInsertChild(root, child, i);
 
       for (uint32_t j = 0; j < 4; j++) {
@@ -432,8 +411,8 @@ YGBENCHMARKS({
     YGNodeStyleSetJustifyContent(root, YGJustifyCenter);
     YGNodeStyleSetAlignContent(root, YGAlignCenter);
     YGNodeStyleSetGap(root, YGGutterAll, 10);
-    YGNodeStyleSetGridTemplateColumns(root, createFixed3x80Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createFixed3x80Tracks());
+    APPLY(root, &kColumns, kFixed3x80);
+    APPLY(root, &kRows, kFixed3x80);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -452,8 +431,8 @@ YGBENCHMARKS({
     YGNodeRef root = YGNodeNew();
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 400);
-    YGNodeStyleSetGridTemplateColumns(root, createAuto4Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createAuto4Tracks());
+    APPLY(root, &kColumns, kAuto4);
+    APPLY(root, &kRows, kAuto4);
 
     for (uint32_t i = 0; i < 16; i++) {
       YGNodeRef child = YGNodeNew();
@@ -472,8 +451,8 @@ YGBENCHMARKS({
     YGNodeStyleSetWidth(root, 600);
     YGNodeStyleSetHeight(root, 400);
     YGNodeStyleSetGap(root, YGGutterAll, 10);
-    YGNodeStyleSetGridTemplateColumns(root, createMinmaxColumnTracks());
-    YGNodeStyleSetGridTemplateRows(root, createMinmaxRowTracks());
+    APPLY(root, &kColumns, kMinmaxColumns);
+    APPLY(root, &kRows, kMinmaxRows);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -489,8 +468,8 @@ YGBENCHMARKS({
   YGBENCHMARK("Grid indefinite container", {
     YGNodeRef root = YGNodeNew();
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
-    YGNodeStyleSetGridTemplateColumns(root, createAuto3Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createAuto2Tracks());
+    APPLY(root, &kColumns, kAuto3);
+    APPLY(root, &kRows, kAuto2);
 
     for (uint32_t i = 0; i < 6; i++) {
       YGNodeRef child = YGNodeNew();
@@ -509,8 +488,8 @@ YGBENCHMARKS({
     YGNodeStyleSetDisplay(root, YGDisplayGrid);
     YGNodeStyleSetWidth(root, 400);
     YGNodeStyleSetHeight(root, 300);
-    YGNodeStyleSetGridTemplateColumns(root, createPercent3Tracks());
-    YGNodeStyleSetGridTemplateRows(root, createPercent3RowTracks());
+    APPLY(root, &kColumns, kPercent3Columns);
+    APPLY(root, &kRows, kPercent3Rows);
 
     for (uint32_t i = 0; i < 9; i++) {
       YGNodeRef child = YGNodeNew();
@@ -529,8 +508,8 @@ YGBENCHMARKS({
     YGNodeStyleSetHeight(root, 5000);
     YGNodeStyleSetGap(root, YGGutterColumn, 8);
     YGNodeStyleSetGap(root, YGGutterRow, 4);
-    YGNodeStyleSetGridTemplateColumns(root, createMixed20ColumnTracks());
-    YGNodeStyleSetGridTemplateRows(root, createMixed50RowTracks());
+    APPLY(root, &kColumns, kMixed20Columns);
+    APPLY(root, &kRows, kMixed50Rows);
 
     uint32_t childIndex = 0;
 

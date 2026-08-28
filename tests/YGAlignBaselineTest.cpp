@@ -6,7 +6,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <yoga/YGGridTrackList.h>
 #include <yoga/Yoga.h>
 
 static float _baselineFunc(
@@ -844,12 +843,10 @@ TEST(YogaTest, grid_align_baseline_with_margin) {
   YGNodeStyleSetAlignItems(root, YGAlignBaseline);
   YGNodeStyleSetPositionType(root, YGPositionTypeAbsolute);
   YGNodeStyleSetDisplay(root, YGDisplayGrid);
-  auto root_gridTemplateColumns = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGNodeStyleSetGridTemplateColumns(root, root_gridTemplateColumns);
-  YGGridTrackListFree(root_gridTemplateColumns);
+  YGNodeStyleSetGridTemplateColumnsCount(root, 3);
+  YGNodeStyleSetGridTemplateColumn(root, 0, YGGridTrackTypePoints, 100);
+  YGNodeStyleSetGridTemplateColumn(root, 1, YGGridTrackTypePoints, 100);
+  YGNodeStyleSetGridTemplateColumn(root, 2, YGGridTrackTypePoints, 100);
 
   YGNodeRef root_child0 = YGNodeNewWithConfig(config);
   YGNodeStyleSetMargin(root_child0, YGEdgeTop, 10);
@@ -898,11 +895,9 @@ TEST(YogaTest, grid_align_baseline_with_padding) {
   YGNodeStyleSetPadding(root, YGEdgeTop, 20);
   YGNodeStyleSetPadding(root, YGEdgeBottom, 20);
   YGNodeStyleSetDisplay(root, YGDisplayGrid);
-  auto root_gridTemplateColumns = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGNodeStyleSetGridTemplateColumns(root, root_gridTemplateColumns);
-  YGGridTrackListFree(root_gridTemplateColumns);
+  YGNodeStyleSetGridTemplateColumnsCount(root, 2);
+  YGNodeStyleSetGridTemplateColumn(root, 0, YGGridTrackTypePoints, 100);
+  YGNodeStyleSetGridTemplateColumn(root, 1, YGGridTrackTypePoints, 100);
 
   YGNodeRef root_child0 = YGNodeNewWithConfig(config);
   YGNodeStyleSetWidth(root_child0, 100);
@@ -950,11 +945,9 @@ TEST(YogaTest, grid_align_baseline_nested_child) {
   YGNodeStyleSetAlignItems(root, YGAlignBaseline);
   YGNodeStyleSetPositionType(root, YGPositionTypeAbsolute);
   YGNodeStyleSetDisplay(root, YGDisplayGrid);
-  auto root_gridTemplateColumns = YGGridTrackListCreate();
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGGridTrackListAddTrack(root_gridTemplateColumns, YGPoints(100));
-  YGNodeStyleSetGridTemplateColumns(root, root_gridTemplateColumns);
-  YGGridTrackListFree(root_gridTemplateColumns);
+  YGNodeStyleSetGridTemplateColumnsCount(root, 2);
+  YGNodeStyleSetGridTemplateColumn(root, 0, YGGridTrackTypePoints, 100);
+  YGNodeStyleSetGridTemplateColumn(root, 1, YGGridTrackTypePoints, 100);
 
   YGNodeRef root_child0 = YGNodeNewWithConfig(config);
   YGNodeStyleSetMargin(root_child0, YGEdgeTop, 10);
