@@ -1,0 +1,24 @@
+# ninja log v5
+1	10	0	/home/z/work/hanzo/yoga/build-clang21-libcxx/CMakeFiles/cmake.verify_globs	1aacbcff3db0caf3
+11	503	1787435596551372796	yoga/CMakeFiles/yogacore.dir/YGEnums.cpp.o	f8a23cfbabfdb851
+31	1361	1787435597371381098	yoga/CMakeFiles/yogacore.dir/node/LayoutResults.cpp.o	ded5eafb00fa3f69
+23	1607	1787435597643383852	yoga/CMakeFiles/yogacore.dir/YGValue.cpp.o	73b9111f964a6074
+20	1868	1787435597896386414	yoga/CMakeFiles/yogacore.dir/YGPixelGrid.cpp.o	b847faf1c967b080
+29	1946	1787435597982387285	yoga/CMakeFiles/yogacore.dir/debug/AssertFatal.cpp.o	92563974f83d3e82
+16	2032	1787435598038387851	yoga/CMakeFiles/yogacore.dir/YGNodeLayout.cpp.o	d4969e7e1aea50a6
+29	2032	1787435598053388003	yoga/CMakeFiles/yogacore.dir/debug/Log.cpp.o	da1217a71b0a2803
+23	2076	1787435598098388459	yoga/CMakeFiles/yogacore.dir/algorithm/Baseline.cpp.o	ff003c6e2e5bf53
+10	2132	1787435598147388955	yoga/CMakeFiles/yogacore.dir/YGConfig.cpp.o	c8d4132558335c9
+30	2341	1787435598379391304	yoga/CMakeFiles/yogacore.dir/event/event.cpp.o	590a724d73dec3c1
+28	2402	1787435598435391871	yoga/CMakeFiles/yogacore.dir/algorithm/PixelGrid.cpp.o	df4ef6caef21a2f2
+20	2472	1787435598507392600	yoga/CMakeFiles/yogacore.dir/YGNodeStyle.cpp.o	3997236d194d3d27
+28	2560	1787435598565697830	yoga/CMakeFiles/yogacore.dir/config/Config.cpp.o	c477ccf164603f0d
+12	2641	1787435598676394311	yoga/CMakeFiles/yogacore.dir/YGGridTrackList.cpp.o	9ddc9c908cd79d1a
+25	2867	1787435598898396558	yoga/CMakeFiles/yogacore.dir/algorithm/Cache.cpp.o	88753c15ea8b92f7
+16	2995	1787435599012397712	yoga/CMakeFiles/yogacore.dir/YGNode.cpp.o	340382b42e2c506d
+23	3019	1787435599052398117	yoga/CMakeFiles/yogacore.dir/algorithm/AbsoluteLayout.cpp.o	d984e778c8c50df7
+27	3027	1787435599058398178	yoga/CMakeFiles/yogacore.dir/algorithm/FlexLine.cpp.o	49cf39d21da1fa95
+26	3082	1787435599110398704	yoga/CMakeFiles/yogacore.dir/algorithm/CalculateLayout.cpp.o	566d1fcc3bf67e78
+32	3434	1787435599465402298	yoga/CMakeFiles/yogacore.dir/node/Node.cpp.o	6002b1fcfae5e68d
+28	4174	1787435600200409739	yoga/CMakeFiles/yogacore.dir/algorithm/grid/GridLayout.cpp.o	5184015cbbf54c5a
+4174	4291	1787435600317410923	yoga/libyogacore.a	4581ae30e637f75f

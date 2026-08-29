@@ -1,0 +1,5 @@
+if(EXISTS "/home/z/work/hanzo/yoga/build-clang18/tests/yogatests[1]_tests.cmake")
+  include("/home/z/work/hanzo/yoga/build-clang18/tests/yogatests[1]_tests.cmake")
+else()
+  add_test(yogatests_NOT_BUILT yogatests_NOT_BUILT)
+endif()

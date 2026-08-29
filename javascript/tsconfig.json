@@ -9,11 +9,11 @@
     // TODO: moduleResolution: "nodenext" is buggy with this if the absolute
     // path contains any capital letters
     "forceConsistentCasingInFileNames": false,
-    "baseUrl": ".",
     "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
     "paths": {
-      "@hanzo/layout": ["src"]
+      "*": ["./*"],
+      "@hanzo/layout": ["./src"]
     }
   },
   "include": [

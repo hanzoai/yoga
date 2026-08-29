@@ -1,0 +1,4 @@
+/home/z/work/hanzo/yoga/build-clang18/yoga/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/home/z/work/hanzo/yoga/build-clang18/yoga/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/home/z/work/hanzo/yoga/build-clang18/yoga/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/home/z/work/hanzo/yoga/build-clang18/yoga/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir
