@@ -37,20 +37,20 @@
     "tsc": "tsc --noEmit"
   },
   "devDependencies": {
-    "@babel/cli": "^8.0.4",
-    "@babel/core": "^8.0.1",
-    "@babel/preset-env": "^8.0.2",
-    "@babel/preset-typescript": "^8.0.1",
-    "@types/jest": "^30.0.0",
-    "@types/node": "26.4.0",
-    "@types/which": "^3.0.4",
-    "@yogalayout/cmake-bin": "^3.28.0-1",
-    "babel-register-esm": "^1.2.5",
-    "clang-format": "^1.8.0",
-    "glob": "^13.0.6",
-    "jest": "^30.5.0",
-    "just-scripts": "^2.6.2",
-    "ninja-binaries": "^1.12.1",
-    "which": "^7.0.0"
+    "@babel/cli": "catalog:",
+    "@babel/core": "catalog:",
+    "@babel/preset-env": "catalog:",
+    "@babel/preset-typescript": "catalog:",
+    "@types/jest": "catalog:",
+    "@types/node": "catalog:",
+    "@types/which": "catalog:",
+    "@yogalayout/cmake-bin": "catalog:",
+    "babel-register-esm": "catalog:",
+    "clang-format": "catalog:",
+    "glob": "catalog:",
+    "jest": "catalog:",
+    "just-scripts": "catalog:",
+    "ninja-binaries": "catalog:",
+    "which": "catalog:"
   }
 }

@@ -8,17 +8,17 @@
   },
   "type": "module",
   "dependencies": {
-    "minimist": "^1.2.8",
-    "selenium-webdriver": "^4.48.0",
-    "signedsource": "^2.0.0"
+    "minimist": "catalog:",
+    "selenium-webdriver": "catalog:",
+    "signedsource": "catalog:"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.1",
-    "@babel/preset-typescript": "^8.0.1",
-    "@types/minimist": "^1.2.5",
-    "@types/node": "26.4.0",
-    "@types/selenium-webdriver": "^4.35.6",
-    "babel-register-esm": "^1.2.5",
-    "glob": "^13.0.6"
+    "@babel/core": "catalog:",
+    "@babel/preset-typescript": "catalog:",
+    "@types/minimist": "catalog:",
+    "@types/node": "catalog:",
+    "@types/selenium-webdriver": "catalog:",
+    "babel-register-esm": "catalog:",
+    "glob": "catalog:"
   }
 }

@@ -17,24 +17,24 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.10.2",
-    "@docusaurus/preset-classic": "^3.10.2",
-    "@mdx-js/react": "^3.1.1",
-    "clsx": "^2.1.1",
-    "lz-string": "^1.5.0",
-    "nullthrows": "^1.1.1",
-    "prism-react-renderer": "^2.4.1",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "react-live": "^4.1.8",
-    "@hanzo/layout": "3.3.0"
+    "@docusaurus/core": "catalog:",
+    "@docusaurus/preset-classic": "catalog:",
+    "@mdx-js/react": "catalog:",
+    "clsx": "catalog:",
+    "lz-string": "catalog:",
+    "nullthrows": "catalog:",
+    "prism-react-renderer": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-live": "catalog:",
+    "@hanzo/layout": "catalog:"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.10.2",
-    "@docusaurus/tsconfig": "^3.10.2",
-    "@docusaurus/types": "^3.10.2",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1"
+    "@docusaurus/module-type-aliases": "catalog:",
+    "@docusaurus/tsconfig": "catalog:",
+    "@docusaurus/types": "catalog:",
+    "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:"
   },
   "browserslist": "> 0.5%, last 2 versions, Firefox ESR, not dead",
   "engines": {
